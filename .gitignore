@@ -1,2 +1,3 @@
 /motor-controller/.pio
 /motor-controller/.cache
+/motor-controller/compile_commands.json
