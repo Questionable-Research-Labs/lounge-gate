@@ -17,12 +17,12 @@ constexpr int ADC_MIN = FULL_ADC * 0.2;
 constexpr int ADC_MAX = FULL_ADC * 1;
 
 /** The minimum output of the PWM motor */
-constexpr int MOTOR_OUT_MIN = 114;
-// constexpr int MOTOR_OUT_MIN = 103;
+// constexpr int MOTOR_OUT_MIN = 114;
+constexpr int MOTOR_OUT_MIN = 103;
 
 /** The maximim output of the motor */
-// constexpr int MOTOR_OUT_MAX = 140;
-constexpr int MOTOR_OUT_MAX = 155;
+// constexpr int MOTOR_OUT_MAX = 190;
+constexpr int MOTOR_OUT_MAX = 170;
 
 /** Mode for relay to drive forwards */
 constexpr int FORWARDS_STATE = HIGH;
