@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <animation.h>
+#include <config.h>
 
 constexpr int IN_PIN = A0;
 constexpr int OUT_PIN = 3;
@@ -8,21 +9,19 @@ constexpr int RELAY_PIN = 13;
 /** The midpoint of the input ADC, repersenting the stationary
  * position of the controller */
 constexpr int FULL_ADC = 0b1111111111;
-// constexpr int ADC_MIDPOINT = FULL_ADC * 0.44;
-constexpr int ADC_MIDPOINT = FULL_ADC * 0.49;
+constexpr int ADC_MIDPOINT = FULL_ADC * controller_config.controller_stationary;
 /** The threshold either side of input ADC to be used as deadzone */
-constexpr int ADC_DEADZONE = FULL_ADC * 0.1;
+constexpr int ADC_DEADZONE = FULL_ADC * controller_config.controller_deadzone;
 
-constexpr int ADC_MIN = FULL_ADC * 0.2;
-constexpr int ADC_MAX = FULL_ADC * 1;
+constexpr int ADC_MIN = FULL_ADC * controller_config.controller_min;
+constexpr int ADC_MAX = FULL_ADC * controller_config.controller_max;
 
 /** The minimum output of the PWM motor */
-// constexpr int MOTOR_OUT_MIN = 114;
-constexpr int MOTOR_OUT_MIN = 103;
+constexpr int MOTOR_OUT_MIN = controller_config.motor_min;
 
 /** The maximim output of the motor */
 // constexpr int MOTOR_OUT_MAX = 190;
-constexpr int MOTOR_OUT_MAX = 170;
+constexpr int MOTOR_OUT_MAX = controller_config.motor_max;
 
 /** Mode for relay to drive forwards */
 constexpr int FORWARDS_STATE = HIGH;

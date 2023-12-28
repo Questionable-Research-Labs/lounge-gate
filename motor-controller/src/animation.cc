@@ -29,8 +29,6 @@ void setup_neopixel() {
 
 void run_startup_animation() {
     Serial.println("Running startup animation");
-    strip.fill(strip.Color(BACKGROUND_COLOUR));
-    color_wipe(strip.Color(GREEN_COLOUR), 50);
     color_wipe(strip.Color(BACKGROUND_COLOUR), 50);
     Serial.println("Finished startup animation");
 }
