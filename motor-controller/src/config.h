@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct controller_config_s {
     float controller_stationary;
     float controller_deadzone;
@@ -10,11 +12,11 @@ typedef struct controller_config_s {
 
 #if defined(LEFT)
 constexpr controller_config_s controller_config = {
-    .controller_stationary = 0.44,
-    .controller_deadzone = 0.2,
+    .controller_stationary = 0.50,
+    .controller_deadzone = 0.02,
     .controller_min = 0.2,
     .controller_max = 1,
-    .motor_min = 103,
+    .motor_min = 130,
     .motor_max = 180,
     .animation_direction = 1,
 };
@@ -22,11 +24,11 @@ constexpr controller_config_s controller_config = {
 // RIGHT ARDUINO UNO
 constexpr controller_config_s controller_config = {
     .controller_stationary = 0.50,
-    .controller_deadzone = 0.2,
+    .controller_deadzone = 0.02,
     .controller_min = 0.2,
     .controller_max = 1,
-    .motor_min = 114,
-    .motor_max = 200,
+    .motor_min = 130,
+    .motor_max = 180,
     .animation_direction = -1,
 };
 #endif

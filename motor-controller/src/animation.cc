@@ -121,9 +121,6 @@ void circular_fill(uint32_t c, int start, int end) {
         edge_distance = min(edge_distance, 1.0);
         edge_distance /= 0.1;
 
-        //         Serial.print(" | ");
-        // Serial.print("Edge distance: ");
-        Serial.println(edge_distance);
         // Edge distance is the mix factor between the colour and the background colour
         uint32_t newColour = strip.Color(
             (int)(colourRed * edge_distance + backgroundRed * (1 - edge_distance)),

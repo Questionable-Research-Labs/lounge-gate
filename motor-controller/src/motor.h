@@ -1,3 +1,5 @@
+#pragma once
+
 enum MotorState { STATIONARY, FORWARDS, BACKWARDS };
 
 struct tuned_value_result {

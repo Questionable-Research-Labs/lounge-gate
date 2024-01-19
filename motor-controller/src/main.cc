@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include <animation.h>
+#include <direction_controller.h>
+#include <motor.h>
 #include <config.h>
 
 constexpr int IN_PIN = A0;
@@ -29,7 +31,6 @@ constexpr int FORWARDS_STATE = HIGH;
 constexpr int BACKWARDS_STATE = LOW;
 
 MotorState previous_direction = STATIONARY;
-bool is_waiting = false;
 
 
 /**
@@ -56,11 +57,19 @@ tuned_value_result read_tuned_value(int value) {
         current_direction = FORWARDS;
     }
 
-    Serial.println(motorValue);
 
     int motorOutput = motorValue * multiplier + MOTOR_OUT_MIN;
-	
-	return tuned_value_result { current_direction, motorOutput, motorValue };
+
+    if (current_direction == STATIONARY) {
+        motorOutput = 0;
+    }
+
+    Serial.println(motorOutput);
+
+
+    tuned_value_result parsedResult = tuned_value_result { current_direction, motorOutput, motorValue };
+
+    return direction_control(parsedResult);
 }
 
 /**
@@ -69,12 +78,15 @@ tuned_value_result read_tuned_value(int value) {
 inline void set_direction(MotorState direction) {
     switch (direction) {
     case STATIONARY:
+        Serial.println("STATIONARY");
         return;
     case FORWARDS:
         digitalWrite(RELAY_PIN, FORWARDS_STATE);
+        Serial.println("FORWARD");
         return;
     case BACKWARDS:
         digitalWrite(RELAY_PIN, BACKWARDS_STATE);
+        Serial.println("BACKWARDS");
         return;
     }
 }
@@ -109,6 +121,7 @@ void loop() {
     Serial.print(" | ");
     Serial.println(current_direction);
     analogWrite(OUT_PIN, motorOutput);
+    set_direction(result.direction);
 
     animation_loop(result.inputValue, current_direction);
 }

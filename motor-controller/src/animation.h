@@ -1,3 +1,5 @@
+#pragma once
+
 #include "motor.h"
 #include <Adafruit_NeoPixel.h>
 
