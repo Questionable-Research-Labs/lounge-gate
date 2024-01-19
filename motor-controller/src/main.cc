@@ -1,4 +1,6 @@
 #include <Arduino.h>
+#include <animation.h>
+#include <config.h>
 
 constexpr int IN_PIN = A0;
 constexpr int OUT_PIN = 3;
@@ -6,104 +8,107 @@ constexpr int RELAY_PIN = 13;
 
 /** The midpoint of the input ADC, repersenting the stationary
  * position of the controller */
-constexpr int HALF_ADC = 0b0111111111;
+constexpr int FULL_ADC = 0b1111111111;
+constexpr int ADC_MIDPOINT = FULL_ADC * controller_config.controller_stationary;
 /** The threshold either side of input ADC to be used as deadzone */
-constexpr int ADC_DEADZONE = 50;
+constexpr int ADC_DEADZONE = FULL_ADC * controller_config.controller_deadzone;
+
+constexpr int ADC_MIN = FULL_ADC * controller_config.controller_min;
+constexpr int ADC_MAX = FULL_ADC * controller_config.controller_max;
 
 /** The minimum output of the PWM motor */
-constexpr int MOTOR_OUT_MIN = 50;
+constexpr int MOTOR_OUT_MIN = controller_config.motor_min;
+
 /** The maximim output of the motor */
-constexpr int MOTOR_OUT_MAX = 160;
+// constexpr int MOTOR_OUT_MAX = 190;
+constexpr int MOTOR_OUT_MAX = controller_config.motor_max;
 
 /** Mode for relay to drive forwards */
 constexpr int FORWARDS_STATE = HIGH;
 /** Mode for relay to drive forwards */
 constexpr int BACKWARDS_STATE = LOW;
 
-enum MotorState { STATIONARY, FORWARDS, BACKWARDS };
-
 MotorState previous_direction = STATIONARY;
-unsigned long last_time;
 bool is_waiting = false;
 
+
 /**
- * Calucalte the direction and PWM value from ADC reading
+ * Calculate the direction and PWM value from ADC reading
  * @param value The ADC reading, and where the PWM value will stored
  */
-inline MotorState direction_from_value(int &value) {
-  constexpr int back_det = HALF_ADC - ADC_DEADZONE;
-  constexpr int forward_det = HALF_ADC + ADC_DEADZONE;
-  constexpr float range = HALF_ADC - ADC_DEADZONE;
-  constexpr int multiplier = MOTOR_OUT_MAX - MOTOR_OUT_MIN;
+tuned_value_result read_tuned_value(int value) {
+    constexpr int back_det = ADC_MIDPOINT - ADC_DEADZONE;
+    constexpr int forward_det = ADC_MIDPOINT + ADC_DEADZONE;
+    constexpr int multiplier = MOTOR_OUT_MAX - MOTOR_OUT_MIN;
 
-  if (value < back_det) {
-    value = ((float)(back_det - value) / range) * multiplier + MOTOR_OUT_MIN;
-    return BACKWARDS;
-  } else if (forward_det < value) {
-    value = ((float)(value - forward_det) / range) * multiplier + MOTOR_OUT_MIN;
-    return FORWARDS;
-  }
+    MotorState current_direction = STATIONARY;
+    float motorValue = 0;
 
-  value = 0;
-  return STATIONARY;
+    if (value < back_det) {
+        const int range = back_det - ADC_MIN;
+        motorValue = ((float)(back_det - value) / range);
+
+        current_direction = BACKWARDS;
+    } else if (forward_det < value) {
+        const int range = ADC_MAX - forward_det;
+        motorValue = ((float)(value - forward_det) / range);
+
+        current_direction = FORWARDS;
+    }
+
+    Serial.println(motorValue);
+
+    int motorOutput = motorValue * multiplier + MOTOR_OUT_MIN;
+	
+	return tuned_value_result { current_direction, motorOutput, motorValue };
 }
 
 /**
  * Change set the state of the relay
  */
 inline void set_direction(MotorState direction) {
-  switch (direction) {
-  case STATIONARY:
-    return;
-  case FORWARDS:
-    digitalWrite(RELAY_PIN, FORWARDS_STATE);
-    return;
-  case BACKWARDS:
-    digitalWrite(RELAY_PIN, BACKWARDS_STATE);
-    return;
-  }
-}
-
-void setup_wait() {
-  if (!is_waiting) {
-    is_waiting = true;
-    last_time = millis();
-    return;
-  }
-
-  if (last_time > 1000) {
-    is_waiting = false;
-  }
+    switch (direction) {
+    case STATIONARY:
+        return;
+    case FORWARDS:
+        digitalWrite(RELAY_PIN, FORWARDS_STATE);
+        return;
+    case BACKWARDS:
+        digitalWrite(RELAY_PIN, BACKWARDS_STATE);
+        return;
+    }
 }
 
 void setup() {
-  pinMode(IN_PIN, INPUT);
-  pinMode(OUT_PIN, OUTPUT);
-  pinMode(RELAY_PIN, OUTPUT);
+    pinMode(IN_PIN, INPUT);
+    pinMode(OUT_PIN, OUTPUT);
+    pinMode(RELAY_PIN, OUTPUT);
 
-  Serial.begin(9600);
+    Serial.begin(9600);
 
-  last_time = millis();
+    setup_neopixel();
+
+    analogWrite(OUT_PIN, 0);
+    set_direction(FORWARDS);
+
+    run_startup_animation();
 }
 
 void loop() {
-  int value = analogRead(IN_PIN);
-  MotorState current_direction = direction_from_value(value);
+    int value = analogRead(IN_PIN);
+    Serial.print("Raw Value: ");
+    Serial.print((float)value / FULL_ADC);
+    Serial.print(" | ");
 
-  if (current_direction == STATIONARY) {
-    previous_direction = STATIONARY;
-    setup_wait();
-    analogWrite(OUT_PIN, 0);
-  }
+    auto result = read_tuned_value(value);
+	
+	MotorState current_direction = result.direction;
+	int motorOutput = result.motorOutput;
 
-  if (current_direction != previous_direction) {
-    setup_wait();
-    if (is_waiting) {
-      analogWrite(OUT_PIN, 0);
-      return;
-    }
-    set_direction(current_direction);
-  }
+    Serial.print(motorOutput);
+    Serial.print(" | ");
+    Serial.println(current_direction);
+    analogWrite(OUT_PIN, motorOutput);
 
-  analogWrite(OUT_PIN, value);
+    animation_loop(result.inputValue, current_direction);
 }
