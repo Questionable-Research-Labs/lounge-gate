@@ -38,6 +38,8 @@ MotorState previous_direction = STATIONARY;
  * @param value The ADC reading, and where the PWM value will stored
  */
 tuned_value_result read_tuned_value(int value) {
+    int limited_value = min(max(value, ADC_MIN), ADC_MAX);
+
     constexpr int back_det = ADC_MIDPOINT - ADC_DEADZONE;
     constexpr int forward_det = ADC_MIDPOINT + ADC_DEADZONE;
     constexpr int multiplier = MOTOR_OUT_MAX - MOTOR_OUT_MIN;
@@ -45,14 +47,14 @@ tuned_value_result read_tuned_value(int value) {
     MotorState current_direction = STATIONARY;
     float motorValue = 0;
 
-    if (value < back_det) {
+    if (limited_value < back_det) {
         const int range = back_det - ADC_MIN;
-        motorValue = ((float)(back_det - value) / range);
+        motorValue = ((float)(back_det - limited_value) / range);
 
         current_direction = BACKWARDS;
     } else if (forward_det < value) {
         const int range = ADC_MAX - forward_det;
-        motorValue = ((float)(value - forward_det) / range);
+        motorValue = ((float)(limited_value - forward_det) / range);
 
         current_direction = FORWARDS;
     }

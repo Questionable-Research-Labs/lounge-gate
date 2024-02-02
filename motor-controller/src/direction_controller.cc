@@ -4,6 +4,8 @@ MotorState previous_confirmed_direction = STATIONARY;
 bool is_waiting = false;
 unsigned long last_direction_change_ms = millis();
 
+unsigned long total_delay = 500; 
+
 // Going straight from forward to backward, or vice versa, is a bad idea
 // as it can cause strong EMF which can damage the motor controller
 // It could also quite effectively fling the passengers out of the couch
@@ -14,7 +16,7 @@ tuned_value_result direction_control(tuned_value_result input) {
 
     if (input.direction != previous_confirmed_direction) {
         if (is_waiting) {
-            if (millis() - last_direction_change_ms > 1000) {
+            if (millis() - last_direction_change_ms > total_delay) {
                 is_waiting = false;
             }
         } else {
