@@ -4,7 +4,7 @@ MotorState previous_confirmed_direction = STATIONARY;
 bool is_waiting = false;
 unsigned long last_direction_change_ms = millis();
 
-unsigned long total_delay = 500; 
+unsigned long total_delay = 100; 
 
 // Going straight from forward to backward, or vice versa, is a bad idea
 // as it can cause strong EMF which can damage the motor controller

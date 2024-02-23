@@ -6,7 +6,7 @@
 
 constexpr int IN_PIN = A0;
 constexpr int OUT_PIN = 3;
-constexpr int RELAY_PIN = 13;
+constexpr int RELAY_PIN = 12;
 
 /** The midpoint of the input ADC, repersenting the stationary
  * position of the controller */
@@ -66,7 +66,7 @@ tuned_value_result read_tuned_value(int value) {
         motorOutput = 0;
     }
 
-    Serial.println(motorOutput);
+    // Serial.println(motorOutput);
 
 
     tuned_value_result parsedResult = tuned_value_result { current_direction, motorOutput, motorValue };
@@ -80,15 +80,15 @@ tuned_value_result read_tuned_value(int value) {
 inline void set_direction(MotorState direction) {
     switch (direction) {
     case STATIONARY:
-        Serial.println("STATIONARY");
+        // Serial.println("STATIONARY");
         return;
     case FORWARDS:
         digitalWrite(RELAY_PIN, FORWARDS_STATE);
-        Serial.println("FORWARD");
+        // Serial.println("FORWARD");
         return;
     case BACKWARDS:
         digitalWrite(RELAY_PIN, BACKWARDS_STATE);
-        Serial.println("BACKWARDS");
+        // Serial.println("BACKWARDS");
         return;
     }
 }
